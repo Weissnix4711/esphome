@@ -5,9 +5,12 @@ from esphome.const import CONF_IN_PIN, CONF_OUT_PIN, CONF_ID
 
 CODEOWNERS = ['@Weissnix4711']
 
+ESP_PLATFORMS = ['ESP8266']
+
 opentherm_ns = cg.esphome_ns.namespace('opentherm')
 OpenthermComponent = opentherm_ns.class_('OpenthermComponent', cg.Component)
 
+CONF_OPENTHERM_ID = 'opentherm_id'
 CONFIG_SCHEMA = cv.Schema({
     cv.GenerateID(): cv.declare_id(OpenthermComponent),
     cv.Required(CONF_IN_PIN): pins.gpio_input_pullup_pin_schema,
