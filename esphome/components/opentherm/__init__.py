@@ -5,8 +5,6 @@ from esphome.const import CONF_IN_PIN, CONF_OUT_PIN, CONF_ID
 
 CODEOWNERS = ['@Weissnix4711']
 
-ESP_PLATFORMS = ['ESP8266']
-
 opentherm_ns = cg.esphome_ns.namespace('opentherm')
 OpenthermComponent = opentherm_ns.class_('OpenthermComponent', cg.Component)
 
@@ -25,6 +23,3 @@ def to_code(config):
     out_pin = yield cg.gpio_pin_expression(config[CONF_OUT_PIN])
     cg.add(var.set_in_pin(in_pin))
     cg.add(var.set_out_pin(out_pin))
-
-    # https://platformio.org/lib/show/4348/Opentherm
-    cg.add_library('4348', '1.2')

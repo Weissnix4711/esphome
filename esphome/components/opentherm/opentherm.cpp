@@ -15,26 +15,16 @@ void OpenthermComponent::setup() {
 }
 
 void OpenthermComponent::loop() {
-  while (OPENTHERM::isIdle()) {
-    // todo binary sensors
-    for (OpenthermRegisteredSensor sensor : this->sensors_) {
-      OPENTHERM::send(out_pin_->get_pin(), sensor.message);
-      // todo wait for to be sent, get message, call sensor.function
-    }
-    // todo climate devices.
-    // Need ch and dhw set and is,
-    // ch + dhw mode from master status LB
-    // and flame status (climate action HEAT/IDLE)
-  }
+  // todo
 }
 
-void OpenthermComponent::register_sensor(byte id, const std::function<void(OpenthermData)> &func) {
+void OpenthermComponent::register_sensor(uint8_t id, const std::function<void(OpenthermMessage)> &func) {
   auto sensor = OpenthermRegisteredSensor {
-    .message = OpenthermData {
-      .type = OT_MSGTYPE_READ_DATA,
+    .message = OpenthermMessage {
+      .type = OpenthermMessageType::READ_DATA,
       .id = id,
-      .valueHB = 0,
-      .valueLB = 0
+      .high_byte = 0,
+      .low_byte = 0
     },
     .function = func
   };
