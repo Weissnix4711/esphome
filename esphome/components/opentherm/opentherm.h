@@ -49,6 +49,15 @@ struct OpenthermMessage {
   uint8_t id;
   uint8_t high_byte;
   uint8_t low_byte;
+
+  float f88();
+  void f88(float value);
+
+  uint16_t u16();
+  void u16(uint16_t value);
+
+  int16_t s16();
+  void s16(int16_t value);
 };
 
 struct OpenthermRegisteredBinarySensor {
@@ -73,7 +82,9 @@ class OpenthermComponent : public Component {
   void set_in_pin(GPIOPin *in_pin) { in_pin_ = in_pin; }
   void set_out_pin(GPIOPin *out_pin) { out_pin_ = out_pin; }
 
-  void register_sensor(byte id, const std::function<void(OpenthermMessage)> &func);
+  // todo void register_binary_sensor();
+  // todo void register_climate();
+  void register_sensor(uint8_t id, const std::function<void(OpenthermMessage)> &func);
 
  protected:
   GPIOPin *in_pin_{nullptr};
