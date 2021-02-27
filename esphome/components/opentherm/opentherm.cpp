@@ -11,21 +11,59 @@ void OpenthermComponent::setup() {
   this->in_pin_->setup();
   this->out_pin_->setup();
   this->out_pin_->digital_write(true);
-  delay(1000);
+  this->last_request_timestamp_ = millis();
 }
 
 void OpenthermComponent::loop() {
-  while (OPENTHERM::isIdle()) {
-    // todo binary sensors
-    for (OpenthermRegisteredSensor sensor : this->sensors_) {
-      OPENTHERM::send(out_pin_->get_pin(), sensor.message);
-      // todo wait for to be sent, get message, call sensor.function
-    }
-    // todo climate devices.
-    // Need ch and dhw set and is,
-    // ch + dhw mode from master status LB
-    // and flame status (climate action HEAT/IDLE)
+  // Make sure communication isn't already in progress.
+  if ((millis() - this->last_request_timestamp_) < 1000) {
+    return;
+  } else if (!OPENTHERM::isIdle) {
+    ESP_LOGW(TAG, "Opentherm is not idle!");
+    return;
   }
+
+  // Timeout / message received.
+  if (OPENTHERM::isError()) {
+    ESP_LOGW(TAG, "Timeout.");
+    return;
+  } else if (OPENTHERM::getMessage(this->current_response_)) {
+    // todo
+    return;
+  }
+
+  // If we need to communicate again, no timeout occured
+  // or message was received,
+  // send the next request.
+  switch (this->current_type_)
+  {
+  case OpenthermCurrentType::BINARY_SENSOR:
+    // todo
+    break;
+
+  case OpenthermCurrentType::CLIMATE:
+    // todo
+    break;
+
+  case OpenthermCurrentType::SENSOR:
+    this->send_sensor_(*(this->sensor_it_));
+    // todo check if that was the last element in vector
+    // todo advance iterator.
+    break;
+  }
+}
+
+void OpenthermComponent::send_binary_sensor_(OpenthermRegisteredBinarySensor &binary_sensor) {
+  // todo
+}
+
+void OpenthermComponent::send_climate_(OpenthermRegisteredClimate &climate) {
+  // todo
+}
+
+void OpenthermComponent::send_sensor_(OpenthermRegisteredSensor &sensor) {
+  OPENTHERM::send(out_pin_->get_pin(), sensor.message);
+  while (!OPENTHERM::isSent()) { }
 }
 
 void OpenthermComponent::register_sensor(byte id, const std::function<void(OpenthermData)> &func) {
