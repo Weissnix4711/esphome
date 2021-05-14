@@ -2,6 +2,7 @@
 
 #include "esphome/core/component.h"
 #include "esphome/core/esphal.h"
+#include <bitset>
 
 namespace esphome {
 namespace opentherm{
@@ -86,9 +87,17 @@ class OpenthermComponent : public Component {
   // todo void register_climate();
   void register_sensor(uint8_t id, const std::function<void(OpenthermMessage)> &func);
 
+  void send_interrupt();
+
  protected:
   GPIOPin *in_pin_{nullptr};
   GPIOPin *out_pin_{nullptr};
+
+  bool activated_{false};
+  uint32_t begin_timestamp_ = 0;
+
+  volatile uint8_t send_bit_ = 0;
+  std::bitset<68> send_frame_;
 
   std::vector<OpenthermRegisteredBinarySensor> binary_sensors_;
   std::vector<OpenthermRegisteredClimate> climates_;

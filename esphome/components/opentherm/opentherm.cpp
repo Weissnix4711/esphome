@@ -44,14 +44,45 @@ void OpenthermMessage::s16(int16_t value) {
   high_byte = (value >> 8) & 0xFF;
 }
 
+void ICACHE_RAM_ATTR OpenthermComponent::send_interrupt() {
+  bool bit_value;
+  if (this->send_bit_ >= 68) {
+    this->send_bit_ = 0;
+    timer1_disable();
+    this->out_pin_->digital_write(true);
+  } else {
+    bit_value = this->send_frame_.test(this->send_bit_);
+    this->out_pin_->digital_write(bit_value);
+    this->send_bit_++;
+  }
+}
+
 void OpenthermComponent::setup() {
   this->in_pin_->setup();
   this->out_pin_->setup();
   this->out_pin_->digital_write(true);
+  this->begin_timestamp_ = millis();
+
+#ifdef ARDUINO_ARCH_ESP8266
+  timer1_attachInterrupt(send_interrupt);
+#endif
+#ifdef ARDUINO_ARCH_ESP32
+  // todo idk
+#endif
 }
 
 void OpenthermComponent::loop() {
-  // todo
+  if (!activated_) {
+    uint32_t current_timestamp_ = millis();
+    if (current_timestamp_ - begin_timestamp_ > 1000) {
+      this->activated_ = true;
+      ESP_LOGD(TAG, "Opentherm ready.");
+    }
+    return;
+  }
+
+  // todo loop through registered components, generate next frame
+  // and start timer
 }
 
 void OpenthermComponent::register_sensor(uint8_t id, const std::function<void(OpenthermMessage)> &func) {
@@ -67,6 +98,8 @@ void OpenthermComponent::register_sensor(uint8_t id, const std::function<void(Op
 
   this->sensors_.push_back(sensor);
 }
+
+// todo register climates and binary sensors
 
 } // namespace opentherm
 } // namespace esphome
